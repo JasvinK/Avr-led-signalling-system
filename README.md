@@ -1,68 +1,173 @@
-# AVR LED Signalling System
+# AVR LED Message Signalling System
 
 ## Overview
-This project implements an LED signalling program using **AVR Assembly** on an **ATmega microcontroller**. The program displays encoded messages by controlling LED blink patterns using precise timing and low-level hardware control.
+This project implements a **visual message signalling system using LEDs** on the **Arduino Mega2560** programmed in **AVR Assembly**.
 
-The goal of this project is to practice **embedded systems programming, bitwise operations, and microcontroller register manipulation** using AVR assembly.
+Each letter of a message is converted into a **specific LED pattern and duration**, allowing words to be communicated through sequences of lights. The system demonstrates low-level programming concepts including register manipulation, stack-based parameter passing, and function implementation in assembly language.
+
+The program reads a message from memory, encodes each letter into an LED signal pattern, and displays the message using six LEDs.
 
 ---
 
 ## Features
-- LED message signalling using AVR Assembly
-- Precise timing control with delay loops
-- Direct hardware control through microcontroller registers
-- Implementation of encoded signal patterns using LED blinking
+- LED-based message signalling system
+- Custom encoding for each alphabet letter
+- Variable signal speed (short and long durations)
+- Assembly functions using register and stack parameter passing
+- Modular assembly program design
 
 ---
 
-## Technologies Used
+## Hardware and Tools
+- **Microcontroller:** Arduino Mega2560
 - **Language:** AVR Assembly
-- **Microcontroller:** ATmega2560
-- **Development Environment:** Atmel Studio
-- **Hardware Output:** LEDs connected to microcontroller pins
+- **Development Environment:** Microchip Studio
+- **Output Device:** Six onboard LEDs
 
 ---
 
-## How It Works
-The program generates LED signalling patterns that represent encoded messages.
+## How the System Works
 
-The program:
-1. Loads encoded message values.
-2. Controls LED output pins on the microcontroller.
-3. Uses delay loops to control LED ON/OFF timing.
-4. Repeats patterns to display the full message sequence.
+Each letter of the alphabet is represented by:
 
-Each signal consists of:
-- LED ON duration
-- LED OFF duration
-- Delay between signals
+- A **6-LED pattern**
+- A **signal duration** (short or long)
+
+Example encoding:
+
+| Letter | LED Pattern | Duration |
+|------|-------------|---------|
+| H | `..oo..` | Short |
+| E | `oooooo` | Long |
+| L | `o.o.o.` | Long |
+| O | `.oooo.` | Long |
+
+Where:
+- `o` = LED ON  
+- `.` = LED OFF  
+
+The program converts letters into LED patterns and displays them sequentially.
 
 ---
 
-## Project Files
+# Program Functions
+
+## configure_leds
+Turns LEDs on or off based on the bit pattern stored in register `r16`.
+
+Each bit controls a specific LED:
+
 ```
-a2-signalling.asm       # Main assembly source code
-a2-signalling.asmproj   # Atmel Studio project file
-a2-signalling.hex       # Compiled program for microcontroller
-a2-signalling.lss       # Assembly listing file
+bit5 bit4 bit3 bit2 bit1 bit0
+LED1 LED2 LED3 LED4 LED5 LED6
+```
+
+Example:
+
+```
+0b00100001
+```
+
+Turns on the **first and last LED**.
+
+---
+
+## fast_leds
+Displays an LED pattern for **short duration (~0.25 seconds)** before turning the LEDs off.
+
+Uses:
+- `configure_leds`
+- `delay_short`
+
+---
+
+## slow_leds
+Displays an LED pattern for **long duration (~1 second)**.
+
+Uses:
+- `configure_leds`
+- `delay_long`
+
+---
+
+## leds_with_speed
+Determines the display speed based on the **two most significant bits** of the parameter.
+
+| Bits | Duration |
+|----|----|
+| `11` | Long (~1 second) |
+| `00` | Short (~0.25 second) |
+
+Calls either:
+- `slow_leds`
+- `fast_leds`
+
+---
+
+## encode_letter
+Converts an **uppercase letter** into its LED encoding.
+
+Steps:
+1. Search the **PATTERNS table**.
+2. Determine LED pattern and speed.
+3. Return the encoded byte in register `r25`.
+
+Example:
+
+```
+A → 0b11001100
+```
+
+---
+
+## display_message_signal
+Displays an entire message using LED signals.
+
+Process:
+
+1. Read each letter from program memory.
+2. Convert the letter using `encode_letter`.
+3. Display the signal using `leds_with_speed`.
+4. Continue until the null terminator (`0`) is reached.
+
+---
+
+## Project Structure
+
+```
+avr-led-message-signalling
+│
+├── a2-signalling.asm
+└── README.md
 ```
 
 ---
 
 ## Concepts Demonstrated
-- Embedded systems programming
-- AVR assembly language
-- Bitwise operations
-- Hardware control using microcontroller registers
-- Timing and signal generation
+
+- AVR assembly programming
+- Function implementation in assembly
+- Register-based parameter passing
+- Stack-based parameter passing
+- Microcontroller hardware control
+- LED signalling and pattern encoding
+- Program memory access
 
 ---
 
-## Learning Outcome
-This project demonstrates how low-level programs interact directly with hardware to produce controlled outputs. It provides hands-on experience with **assembly programming, microcontroller architecture, and embedded system design**.
+## Learning Outcomes
+
+This project demonstrates how **low-level programs interact directly with hardware** to create visual communication systems. It reinforces understanding of:
+
+- Embedded system programming
+- Assembly-level function design
+- Binary encoding and decoding
+- Microcontroller input/output control
 
 ---
 
 ## Author
-Jasvin Kaur  
-Computer Science Student – University of Victoria
+
+**Jasvin Kaur**  
+Computer Science Student  
+University of Victoria
